@@ -1,0 +1,44 @@
+name: Builder
+
+on: ["push", "pull_request", "workflow_dispatch"]
+
+jobs:
+  build:
+    name: Build vkvasalt-manager for Decky
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up NodeJS 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+  
+    - name: Install JS dependencies
+      run: |
+        npm i -g pnpm
+        pnpm install
+      
+    - name: Build Frontend
+      run: |
+        pnpm run build
+      
+    - name: Package Release
+      run: |
+        mkdir "vkvasalt-manager"
+        cp *.py "./vkvasalt-manager"
+        cp *.json "./vkvasalt-manager"
+        cp LICENSE "./vkvasalt-manager"
+        cp README.md "./vkvasalt-manager"
+        cp -r dist "./vkvasalt-manager"
+        mkdir upload
+        mv "./vkvasalt-manager" ./upload
+    
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: vkvasalt-manager-Decky
+        path: ./upload
+  
