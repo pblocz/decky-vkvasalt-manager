@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 import { FaShip } from "react-icons/fa";
 
-// import logo from "../assets/logo.png";
+import logo from "../assets/logo.png";
 
 // This function calls the python function "add", which takes in two numbers and returns their sum (as a number)
 // Note the type annotations:
@@ -55,13 +55,13 @@ function Content() {
         </ButtonItem>
       </PanelSectionRow>
 
-      {/* <PanelSectionRow>
+      <PanelSectionRow>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img src={logo} />
         </div>
-      </PanelSectionRow> */}
+      </PanelSectionRow> 
 
-      {/*<PanelSectionRow>
+      <PanelSectionRow>
         <ButtonItem
           layout="below"
           onClick={() => {
@@ -71,7 +71,7 @@ function Content() {
         >
           Router
         </ButtonItem>
-      </PanelSectionRow>*/}
+      </PanelSectionRow>
     </PanelSection>
   );
 };
