@@ -40,7 +40,9 @@ function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: 
             bottomSeparator="none"
             onClick={() => onActivate(profileName)}
           >
-            Activate
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Activate
+            </div>
           </ButtonItem>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -48,7 +50,9 @@ function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: 
             layout="below"
             onClick={() => onCopySteamCommand(profileName)}
           >
-            Copy Steam Cmd
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Copy Steam Cmd
+            </div>
           </ButtonItem>
         </div>
       </div>
