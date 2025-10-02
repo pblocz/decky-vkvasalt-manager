@@ -1,7 +1,7 @@
 {
-  "name": "decky-plugin-template",
-  "version": "0.0.1",
-  "description": "A template to quickly create decky plugins from scratch, based on TypeScript and webpack",
+  "name": "decky-vkbasalt-manager",
+  "version": "0.1.0",
+  "description": "Switch between vkBasalt profiles created by vkbasalt-manager",
   "type": "module",
   "scripts": {
     "build": "rollup -c",
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SteamDeckHomebrew/decky-plugin-template.git"
+    "url": "git+https://github.com/pblocz/decky-vkbasalt-manager.git"
   },
   "keywords": [
     "decky",
     "plugin",
-    "plugin-template",
+    "vkbasalt",
     "steam-deck",
     "deck"
   ],
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/SteamDeckHomebrew/decky-plugin-template#readme",
   "devDependencies": {
     "@decky/rollup": "^1.0.1",
-    "@decky/ui": "^4.7.2",
+    "@decky/ui": "^4.10.6",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "@types/webpack": "^5.28.5",

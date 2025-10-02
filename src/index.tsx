@@ -2,114 +2,229 @@ import {
   ButtonItem,
   PanelSection,
   PanelSectionRow,
-  Navigation,
   staticClasses
 } from "@decky/ui";
 import {
-  addEventListener,
-  removeEventListener,
   callable,
   definePlugin,
   toaster,
-  // routerHook
 } from "@decky/api"
-import { useState } from "react";
-import { FaShip } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { VscSettingsGear } from "react-icons/vsc";
 
-import logo from "../assets/logo.png";
+// Backend function calls
+const listProfiles = callable<[], string[]>("list_profiles");
+const getActiveProfile = callable<[], string | null>("get_active_profile");
+const activateProfileGlobally = callable<[profile_name: string], boolean>("activate_profile_globally");
+const getSteamCommand = callable<[profile_name: string], string>("get_steam_command");
+const resetProfile = callable<[], boolean>("reset_profile");
 
-// This function calls the python function "add", which takes in two numbers and returns their sum (as a number)
-// Note the type annotations:
-//  the first one: [first: number, second: number] is for the arguments
-//  the second one: number is for the return value
-const add = callable<[first: number, second: number], number>("add");
+interface ProfileItemProps {
+  profileName: string;
+  isActive: boolean;
+  onActivate: (profileName: string) => void;
+  onCopySteamCommand: (profileName: string) => void;
+}
 
-// This function calls the python function "start_timer", which takes in no arguments and returns nothing.
-// It starts a (python) timer which eventually emits the event 'timer_event'
-const startTimer = callable<[], void>("start_timer");
+function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: ProfileItemProps) {
+  return (
+    <PanelSectionRow>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ flex: 1, fontSize: '14px' }}>
+          {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
+        </div>
+        <ButtonItem
+          layout="below"
+          onClick={() => onActivate(profileName)}
+        >
+          Activate
+        </ButtonItem>
+        <ButtonItem
+          layout="below"
+          onClick={() => onCopySteamCommand(profileName)}
+        >
+          Copy Cmd
+        </ButtonItem>
+      </div>
+    </PanelSectionRow>
+  );
+}
 
 function Content() {
-  const [result, setResult] = useState<number | undefined>();
+  const [profiles, setProfiles] = useState<string[]>([]);
+  const [activeProfile, setActiveProfile] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const onClick = async () => {
-    const result = await add(Math.random(), Math.random());
-    setResult(result);
+  const refreshProfiles = async () => {
+    try {
+      setLoading(true);
+      const [profileList, active] = await Promise.all([
+        listProfiles(),
+        getActiveProfile()
+      ]);
+      setProfiles(profileList);
+      setActiveProfile(active);
+    } catch (error) {
+      console.error('Failed to load profiles:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to load vkBasalt profiles"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    refreshProfiles();
+  }, []);
+
+  const handleActivateProfile = async (profileName: string) => {
+    try {
+      const success = await activateProfileGlobally(profileName);
+      if (success) {
+        setActiveProfile(profileName);
+        toaster.toast({
+          title: "Success",
+          body: `Activated profile: ${profileName}`
+        });
+      } else {
+        toaster.toast({
+          title: "Error",
+          body: `Failed to activate profile: ${profileName}`
+        });
+      }
+    } catch (error) {
+      console.error('Failed to activate profile:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to activate profile"
+      });
+    }
+  };
+
+  const handleCopySteamCommand = async (profileName: string) => {
+    try {
+      const command = await getSteamCommand(profileName);
+      await navigator.clipboard.writeText(command);
+      toaster.toast({
+        title: "Copied!",
+        body: `Steam command copied to clipboard`
+      });
+    } catch (error) {
+      console.error('Failed to copy command:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to copy Steam command"
+      });
+    }
+  };
+
+  const handleResetProfile = async () => {
+    try {
+      const success = await resetProfile();
+      if (success) {
+        setActiveProfile(null);
+        toaster.toast({
+          title: "Success",
+          body: "vkBasalt disabled"
+        });
+      } else {
+        toaster.toast({
+          title: "Error",
+          body: "Failed to reset profile"
+        });
+      }
+    } catch (error) {
+      console.error('Failed to reset profile:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to reset profile"
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <PanelSection title="vkBasalt Profile Manager">
+        <PanelSectionRow>
+          <div>Loading profiles...</div>
+        </PanelSectionRow>
+      </PanelSection>
+    );
+  }
+
+  if (profiles.length === 0) {
+    return (
+      <PanelSection title="vkBasalt Profile Manager">
+        <PanelSectionRow>
+          <div style={{ fontSize: '14px', color: '#888' }}>
+            No profiles found. Please install vkbasalt-manager and create profiles.
+          </div>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <ButtonItem
+            layout="below"
+            onClick={refreshProfiles}
+          >
+            Refresh
+          </ButtonItem>
+        </PanelSectionRow>
+      </PanelSection>
+    );
+  }
+
   return (
-    <PanelSection title="Panel Section">
+    <PanelSection title="vkBasalt Profile Manager">
       <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={onClick}
-        >
-          {result ?? "Add two numbers via Python"}
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => startTimer()}
-        >
-          {"Start Python timer"}
-        </ButtonItem>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img src={logo} />
+        <div style={{ fontSize: '14px', marginBottom: '8px' }}>
+          <strong>Active Profile:</strong> {activeProfile || "None"}
         </div>
-      </PanelSectionRow> 
-
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => {
-            Navigation.Navigate("/decky-plugin-test");
-            Navigation.CloseSideMenus();
-          }}
-        >
-          Router
-        </ButtonItem>
       </PanelSectionRow>
+      
+      <PanelSectionRow>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <ButtonItem
+            layout="below"
+            onClick={refreshProfiles}
+          >
+            Refresh
+          </ButtonItem>
+          <ButtonItem
+            layout="below"
+            onClick={handleResetProfile}
+          >
+            Disable
+          </ButtonItem>
+        </div>
+      </PanelSectionRow>
+
+      {profiles.map((profile) => (
+        <ProfileItem
+          key={profile}
+          profileName={profile}
+          isActive={profile === activeProfile}
+          onActivate={handleActivateProfile}
+          onCopySteamCommand={handleCopySteamCommand}
+        />
+      ))}
     </PanelSection>
   );
 };
 
 export default definePlugin(() => {
-  console.log("Template plugin initializing, this is called once on frontend startup")
-
-  // serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
-  //   exact: true,
-  // });
-
-  // Add an event listener to the "timer_event" event from the backend
-  const listener = addEventListener<[
-    test1: string,
-    test2: boolean,
-    test3: number
-  ]>("timer_event", (test1, test2, test3) => {
-    console.log("Template got timer_event with:", test1, test2, test3)
-    toaster.toast({
-      title: "template got timer_event",
-      body: `${test1}, ${test2}, ${test3}`
-    });
-  });
-
   return {
     // The name shown in various decky menus
-    name: "Test Plugin",
+    name: "vkBasalt Profile Manager",
     // The element displayed at the top of your plugin's menu
-    titleView: <div className={staticClasses.Title}>Decky Example Plugin</div>,
+    titleView: <div className={staticClasses.Title}>vkBasalt Profile Manager</div>,
     // The content of your plugin's menu
     content: <Content />,
     // The icon displayed in the plugin list
-    icon: <FaShip />,
+    icon: <VscSettingsGear />,
     // The function triggered when your plugin unloads
     onDismount() {
-      console.log("Unloading")
-      removeEventListener("timer_event", listener);
-      // serverApi.routerHook.removeRoute("/decky-plugin-test");
+      console.log("vkBasalt Profile Manager unloading")
     },
   };
 });
