@@ -200,6 +200,8 @@ vkbasalt-decky-plugin/
 │
 │── src/
 │   ├── index.tsx  # React entrypoint, Decky UI sidebar
+│   ├── utils/
+│   │   └── clipboardUtils.ts  # Reliable clipboard utilities for gaming mode
 │   └── components/
 │       └── ProfileList.tsx
 │
@@ -210,6 +212,10 @@ vkbasalt-decky-plugin/
 ├── README.md
 └── LICENSE(.md) [required, filename should be roughly similar, suffix not needed]
 ```
+
+### 2. Clipboard Utilities
+
+The plugin includes specialized clipboard utilities (`src/utils/clipboardUtils.ts`) designed to work reliably in Steam Deck's gaming mode environment. These utilities provide multiple fallback methods for copying text, including the proven input simulation method that works when standard clipboard APIs may fail.
 
 ### 2. `plugin.json`
 ```

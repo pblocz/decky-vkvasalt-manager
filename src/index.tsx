@@ -11,6 +11,7 @@ import {
 } from "@decky/api"
 import { useState, useEffect } from "react";
 import { VscSettingsGear } from "react-icons/vsc";
+import { copyWithVerification } from "./utils/clipboardUtils";
 
 // Backend function calls
 const listProfiles = callable<[], string[]>("list_profiles");
@@ -29,22 +30,24 @@ interface ProfileItemProps {
 function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: ProfileItemProps) {
   return (
     <PanelSectionRow>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ flex: 1, fontSize: '14px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ fontSize: '14px', fontWeight: '500' }}>
           {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
         </div>
-        <ButtonItem
-          layout="below"
-          onClick={() => onActivate(profileName)}
-        >
-          Activate
-        </ButtonItem>
-        <ButtonItem
-          layout="below"
-          onClick={() => onCopySteamCommand(profileName)}
-        >
-          Copy Cmd
-        </ButtonItem>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <ButtonItem
+            layout="below"
+            onClick={() => onActivate(profileName)}
+          >
+            Activate
+          </ButtonItem>
+          <ButtonItem
+            layout="below"
+            onClick={() => onCopySteamCommand(profileName)}
+          >
+            Copy Steam Cmd
+          </ButtonItem>
+        </div>
       </div>
     </PanelSectionRow>
   );
@@ -106,11 +109,19 @@ function Content() {
   const handleCopySteamCommand = async (profileName: string) => {
     try {
       const command = await getSteamCommand(profileName);
-      await navigator.clipboard.writeText(command);
-      toaster.toast({
-        title: "Copied!",
-        body: `Steam command copied to clipboard`
-      });
+      const result = await copyWithVerification(command);
+      
+      if (result.success) {
+        toaster.toast({
+          title: "Copied!",
+          body: `Steam command copied to clipboard${result.verified ? ' (verified)' : ''}`
+        });
+      } else {
+        toaster.toast({
+          title: "Error",
+          body: "Failed to copy Steam command"
+        });
+      }
     } catch (error) {
       console.error('Failed to copy command:', error);
       toaster.toast({
