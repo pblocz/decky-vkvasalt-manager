@@ -34,13 +34,15 @@ function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: 
         <div style={{ fontSize: '14px', fontWeight: '500' }}>
           {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
           <ButtonItem
             layout="below"
             onClick={() => onActivate(profileName)}
           >
             Activate
           </ButtonItem>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <ButtonItem
             layout="below"
             onClick={() => onCopySteamCommand(profileName)}
@@ -194,16 +196,13 @@ function Content() {
       </PanelSectionRow>
       
       <PanelSectionRow>
-        <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <ButtonItem
             layout="below"
             onClick={refreshProfiles}
           >
             Refresh
           </ButtonItem>
-
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
           <ButtonItem
             layout="below"
             onClick={handleResetProfile}
