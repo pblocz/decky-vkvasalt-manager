@@ -194,13 +194,16 @@ function Content() {
       </PanelSectionRow>
       
       <PanelSectionRow>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
           <ButtonItem
             layout="below"
             onClick={refreshProfiles}
           >
             Refresh
           </ButtonItem>
+
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <ButtonItem
             layout="below"
             onClick={handleResetProfile}
