@@ -37,6 +37,7 @@ function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: 
         <div style={{ display: 'flex', gap: '4px' }}>
           <ButtonItem
             layout="below"
+            bottomSeparator="none"
             onClick={() => onActivate(profileName)}
           >
             Activate
