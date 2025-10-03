@@ -29,34 +29,34 @@ interface ProfileItemProps {
 
 function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: ProfileItemProps) {
   return (
-    <PanelSectionRow>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+    <>
+      <PanelSectionRow>
         <div style={{ fontSize: '14px', fontWeight: '500' }}>
           {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
         </div>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <ButtonItem
-            layout="below"
-            bottomSeparator="none"
-            onClick={() => onActivate(profileName)}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              Activate
-            </div>
-          </ButtonItem>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <ButtonItem
-            layout="below"
-            onClick={() => onCopySteamCommand(profileName)}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              Copy Steam Cmd
-            </div>
-          </ButtonItem>
-        </div>
-      </div>
-    </PanelSectionRow>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          bottomSeparator="none"
+          onClick={() => onActivate(profileName)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Activate
+          </div>
+        </ButtonItem>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          onClick={() => onCopySteamCommand(profileName)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Copy Steam Cmd
+          </div>
+        </ButtonItem>
+      </PanelSectionRow>
+    </>
   );
 }
 
@@ -201,20 +201,20 @@ function Content() {
       </PanelSectionRow>
       
       <PanelSectionRow>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <ButtonItem
-            layout="below"
-            onClick={refreshProfiles}
-          >
-            Refresh
-          </ButtonItem>
-          <ButtonItem
-            layout="below"
-            onClick={handleResetProfile}
-          >
-            Disable
-          </ButtonItem>
-        </div>
+        <ButtonItem
+          layout="below"
+          onClick={refreshProfiles}
+        >
+          Refresh
+        </ButtonItem>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          onClick={handleResetProfile}
+        >
+          Disable
+        </ButtonItem>
       </PanelSectionRow>
 
       {profiles.map((profile) => (
