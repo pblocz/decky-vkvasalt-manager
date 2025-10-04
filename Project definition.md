@@ -157,10 +157,22 @@ vkBasalt Profile Manager
 Active Profile: CAS Sharpening
 
 Profiles:
-  [Activate] [Copy Steam Cmd] Default
-  [Activate] [Copy Steam Cmd] CAS Sharpening  (active)
-  [Activate] [Copy Steam Cmd] Vibrant Colors
-  [Activate] [Copy Steam Cmd] FXAA + SMAA
+  Default
+  [Activate]
+  [Copy Steam Cmd] 
+  ---
+  CAS Sharpening  (active)
+  [Activate]
+  [Copy Steam Cmd] 
+  ---
+  Vibrant Colors
+  [Activate]
+  [Copy Steam Cmd] 
+  ---
+  FXAA + SMAA
+  [Activate]
+  [Copy Steam Cmd] 
+  ---
 ```
 
 1. User opens Decky sidebar.
