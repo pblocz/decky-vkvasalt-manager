@@ -215,6 +215,63 @@ class Plugin:
             decky.logger.error(f"Error checking global profile tag: {e}")
             return False
 
+    async def get_enable_on_launch_status(self) -> bool:
+        """Check if enableOnLaunch is enabled in the global config"""
+        try:
+            if not self.global_config.exists():
+                return False
+                
+            content = self.global_config.read_text()
+            # Look for enableOnLaunch = True line (case insensitive)
+            match = re.search(r'^\s*enableOnLaunch\s*=\s*True\s*$', content, re.MULTILINE | re.IGNORECASE)
+            return match is not None
+        except Exception as e:
+            decky.logger.error(f"Error getting enable on launch status: {e}")
+            return False
+
+    async def set_enable_on_launch(self, enabled: bool) -> bool:
+        """Enable or disable the enableOnLaunch flag in global config"""
+        try:
+            # Ensure the config directory exists
+            self.vkbasalt_config_dir.mkdir(parents=True, exist_ok=True)
+            
+            content = ""
+            if self.global_config.exists():
+                content = self.global_config.read_text()
+            
+            lines = content.split('\n')
+            setting_line = f"enableOnLaunch = {'True' if enabled else 'False'}"
+            
+            # Look for existing enableOnLaunch line
+            found_index = -1
+            for i, line in enumerate(lines):
+                if re.match(r'^\s*enableOnLaunch\s*=', line, re.IGNORECASE):
+                    found_index = i
+                    break
+            
+            if found_index >= 0:
+                # Update existing line
+                lines[found_index] = setting_line
+            else:
+                # Add new line at the beginning (after any existing comments)
+                insert_index = 0
+                for i, line in enumerate(lines):
+                    stripped = line.strip()
+                    if not stripped or stripped.startswith('#'):
+                        continue
+                    insert_index = i
+                    break
+                lines.insert(insert_index, setting_line)
+            
+            # Write back to file
+            self.global_config.write_text('\n'.join(lines))
+            
+            decky.logger.info(f"Set enableOnLaunch to {enabled}")
+            return True
+        except Exception as e:
+            decky.logger.error(f"Error setting enable on launch: {e}")
+            return False
+
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
         self.loop = asyncio.get_event_loop()
