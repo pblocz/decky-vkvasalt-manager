@@ -2,6 +2,7 @@ import {
   ButtonItem,
   PanelSection,
   PanelSectionRow,
+  ToggleField,
   staticClasses
 } from "@decky/ui";
 import {
@@ -22,6 +23,8 @@ const resetProfile = callable<[], boolean>("reset_profile");
 const checkProfileTags = callable<[], Record<string, boolean>>("check_profile_tags");
 const patchUntaggedProfiles = callable<[], boolean>("patch_untagged_profiles");
 const isGlobalProfileTagged = callable<[], boolean>("is_global_profile_tagged");
+const getEnableOnLaunchStatus = callable<[], boolean>("get_enable_on_launch_status");
+const setEnableOnLaunch = callable<[enabled: boolean], boolean>("set_enable_on_launch");
 
 interface ProfileItemProps {
   profileName: string;
@@ -71,20 +74,24 @@ function Content() {
   const [loading, setLoading] = useState(true);
   const [profileTags, setProfileTags] = useState<Record<string, boolean>>({});
   const [globalTagged, setGlobalTagged] = useState<boolean>(false);
+  const [enableOnLaunch, setEnableOnLaunchState] = useState<boolean>(false);
+  const [enableOnLaunchLoading, setEnableOnLaunchLoading] = useState<boolean>(false);
 
   const refreshProfiles = async () => {
     try {
       setLoading(true);
-      const [profileList, active, tags, globalTag] = await Promise.all([
+      const [profileList, active, tags, globalTag, enableStatus] = await Promise.all([
         listProfiles(),
         getActiveProfile(),
         checkProfileTags(),
-        isGlobalProfileTagged()
+        isGlobalProfileTagged(),
+        getEnableOnLaunchStatus()
       ]);
       setProfiles(profileList);
       setActiveProfile(active);
       setProfileTags(tags);
       setGlobalTagged(globalTag);
+      setEnableOnLaunchState(enableStatus);
     } catch (error) {
       console.error('Failed to load profiles:', error);
       toaster.toast({
@@ -197,6 +204,33 @@ function Content() {
     }
   };
 
+  const handleToggleEnableOnLaunch = async (enabled: boolean) => {
+    setEnableOnLaunchLoading(true);
+    try {
+      const success = await setEnableOnLaunch(enabled);
+      if (success) {
+        setEnableOnLaunchState(enabled);
+        toaster.toast({
+          title: enabled ? "Enabled" : "Disabled",
+          body: `vkBasalt ${enabled ? "will" : "won't"} launch automatically with games`
+        });
+      } else {
+        toaster.toast({
+          title: "Error",
+          body: "Failed to change enable on launch setting"
+        });
+      }
+    } catch (error) {
+      console.error('Failed to toggle enable on launch:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to change enable on launch setting"
+      });
+    } finally {
+      setEnableOnLaunchLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <PanelSection title="vkBasalt Profile Manager">
@@ -233,6 +267,16 @@ function Content() {
         <div style={{ fontSize: '14px', marginBottom: '8px' }}>
           <strong>Active Profile:</strong> {activeProfile || "None"}
         </div>
+      </PanelSectionRow>
+
+      <PanelSectionRow>
+        <ToggleField
+          label="Enable on Launch"
+          description="Automatically enable vkBasalt when games start"
+          checked={enableOnLaunch}
+          disabled={enableOnLaunchLoading}
+          onChange={handleToggleEnableOnLaunch}
+        />
       </PanelSectionRow>
       
       <PanelSectionRow>
