@@ -1,4 +1,4 @@
-This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll refine the document accordingly. I’ll also align the backend section with the [Decky plugin template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
+This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky plugin template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
 
 Here’s the updated **Project Definition Document**:
 
@@ -102,13 +102,15 @@ The backend will follow the [Decky plugin template](https://github.com/SteamDeck
 ### 3.1 Core backend responsibilities
 
 * **Profile discovery**
-  Scan `~/.config/vkBasalt/profiles/` (or vkbasalt-manager’s storage path) for available configs.
+  Scan `~/.config/vkBasalt/profiles/` (or vkbasalt-manager's storage path) for available configs.
 * **Activation**
-  Copy or symlink the chosen profile’s `vkBasalt.conf` into `~/.config/vkBasalt/vkBasalt.conf`.
+  Copy or symlink the chosen profile's `vkBasalt.conf` into `~/.config/vkBasalt/vkBasalt.conf`.
 * **State tracking**
   Report which profile is active to the frontend.
 * **Reset**
   Remove or replace `vkBasalt.conf` with a blank/default version.
+* **Profile tagging**
+  Ensure profiles contain name tags as comments for identification, and patch missing tags when needed. document accordingly
 
 ### 3.2 Plugin API methods
 
@@ -118,6 +120,9 @@ These methods will be exposed via the Decky backend (`backend.py` in the templat
 * `get_active_profile() → str | None`
 * `activate_profile_globally(name: str) → bool`
 * `get_steam_command(name: str) → str`
+* `check_profile_tags() → dict[str, bool]`
+* `patch_untagged_profiles() → bool`
+* `is_global_profile_tagged() → bool`
 
 ---
 
@@ -241,3 +246,42 @@ The plugin includes specialized clipboard utilities (`src/utils/clipboardUtils.t
   "license": "MIT"
 }
 ```
+
+---
+
+### 3.3 Profile Tagging System
+
+Each vkBasalt profile should contain a comment tag at the top identifying its name. This enables the plugin to identify which profile is currently active by reading the global `vkBasalt.conf` file.
+
+#### Tag Format
+
+Profile files should include a comment at the top:
+```
+# vkBasalt Profile: <profile-name>
+```
+
+For example, a profile named "CAS Sharpening" would have:
+```
+# vkBasalt Profile: CAS Sharpening
+effects = cas
+# ... rest of config
+```
+
+#### Tagging API Methods
+
+* **`check_profile_tags() → dict[str, bool]`**
+  Returns a dictionary mapping profile names to whether they have proper tags.
+  
+* **`patch_untagged_profiles() → bool`**
+  Adds missing name tags to profiles that don't have them. Returns `True` if any profiles were patched.
+  
+* **`is_global_profile_tagged() → bool`**
+  Checks if the currently active global `vkBasalt.conf` has a profile tag, enabling identification of the active profile.
+
+#### Active Profile Detection
+
+The plugin can determine the active profile in two ways:
+1. **By file comparison** - Compare global config with profile files
+2. **By tag reading** - Read the profile tag from the global config (faster and more reliable)
+
+If the global config lacks a tag, the plugin should offer to patch it or fall back to file comparison.
