@@ -19,20 +19,25 @@ const getActiveProfile = callable<[], string | null>("get_active_profile");
 const activateProfileGlobally = callable<[profile_name: string], boolean>("activate_profile_globally");
 const getSteamCommand = callable<[profile_name: string], string>("get_steam_command");
 const resetProfile = callable<[], boolean>("reset_profile");
+const checkProfileTags = callable<[], Record<string, boolean>>("check_profile_tags");
+const patchUntaggedProfiles = callable<[], boolean>("patch_untagged_profiles");
+const isGlobalProfileTagged = callable<[], boolean>("is_global_profile_tagged");
 
 interface ProfileItemProps {
   profileName: string;
   isActive: boolean;
+  isTagged: boolean;
   onActivate: (profileName: string) => void;
   onCopySteamCommand: (profileName: string) => void;
 }
 
-function ProfileItem({ profileName, isActive, onActivate, onCopySteamCommand }: ProfileItemProps) {
+function ProfileItem({ profileName, isActive, isTagged, onActivate, onCopySteamCommand }: ProfileItemProps) {
   return (
     <>
       <PanelSectionRow>
         <div style={{ fontSize: '14px', fontWeight: '500' }}>
           {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
+          {!isTagged && <span style={{ color: '#FF9800', fontSize: '12px' }}>(untagged)</span>}
         </div>
       </PanelSectionRow>
       <PanelSectionRow>
@@ -64,16 +69,22 @@ function Content() {
   const [profiles, setProfiles] = useState<string[]>([]);
   const [activeProfile, setActiveProfile] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileTags, setProfileTags] = useState<Record<string, boolean>>({});
+  const [globalTagged, setGlobalTagged] = useState<boolean>(false);
 
   const refreshProfiles = async () => {
     try {
       setLoading(true);
-      const [profileList, active] = await Promise.all([
+      const [profileList, active, tags, globalTag] = await Promise.all([
         listProfiles(),
-        getActiveProfile()
+        getActiveProfile(),
+        checkProfileTags(),
+        isGlobalProfileTagged()
       ]);
       setProfiles(profileList);
       setActiveProfile(active);
+      setProfileTags(tags);
+      setGlobalTagged(globalTag);
     } catch (error) {
       console.error('Failed to load profiles:', error);
       toaster.toast({
@@ -162,6 +173,30 @@ function Content() {
     }
   };
 
+  const handlePatchProfiles = async () => {
+    try {
+      const success = await patchUntaggedProfiles();
+      if (success) {
+        await refreshProfiles(); // Refresh to show updated status
+        toaster.toast({
+          title: "Success",
+          body: "Profile tags updated"
+        });
+      } else {
+        toaster.toast({
+          title: "Info",
+          body: "No profiles needed patching"
+        });
+      }
+    } catch (error) {
+      console.error('Failed to patch profiles:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to patch profile tags"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <PanelSection title="vkBasalt Profile Manager">
@@ -217,11 +252,27 @@ function Content() {
         </ButtonItem>
       </PanelSectionRow>
 
+      {/* Show maintenance section if there are untagged profiles or global profile is untagged */}
+      {(Object.values(profileTags).some(tagged => !tagged) || (activeProfile && !globalTagged)) && (
+        <PanelSectionRow>
+          <div style={{ fontSize: '12px', color: '#FF9800', marginBottom: '4px' }}>
+            Some profiles need maintenance
+          </div>
+          <ButtonItem
+            layout="below"
+            onClick={handlePatchProfiles}
+          >
+            Fix Profile Tags
+          </ButtonItem>
+        </PanelSectionRow>
+      )}
+
       {profiles.map((profile) => (
         <ProfileItem
           key={profile}
           profileName={profile}
           isActive={profile === activeProfile}
+          isTagged={profileTags[profile] ?? false}
           onActivate={handleActivateProfile}
           onCopySteamCommand={handleCopySteamCommand}
         />

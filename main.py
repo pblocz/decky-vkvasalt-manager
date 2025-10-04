@@ -1,7 +1,8 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict
+import re
 
 # The decky plugin module is located at decky-loader/plugin
 # For easy intellisense checkout the decky-loader code repo
@@ -14,6 +15,41 @@ class Plugin:
         self.vkbasalt_config_dir = Path.home() / ".config" / "vkBasalt"
         self.profiles_dir = self.vkbasalt_config_dir / "profiles"
         self.global_config = self.vkbasalt_config_dir / "vkBasalt.conf"
+        
+    def _extract_profile_name_from_tag(self, content: str) -> Optional[str]:
+        """Extract profile name from content tag"""
+        match = re.search(r'^#\s*vkBasalt\s+Profile:\s*(.+?)$', content, re.MULTILINE | re.IGNORECASE)
+        return match.group(1).strip() if match else None
+        
+    def _ensure_profile_tag_in_content(self, content: str, profile_name: str) -> str:
+        """Add or update profile tag to content with correct profile name"""
+        existing_name = self._extract_profile_name_from_tag(content)
+        
+        # If tag exists and is correct, no changes needed
+        if existing_name == profile_name:
+            return content
+            
+        new_tag = f"# vkBasalt Profile: {profile_name}"
+        lines = content.split('\n')
+        
+        # If tag exists but is wrong, replace it
+        if existing_name:
+            for i, line in enumerate(lines):
+                if re.search(r'^#\s*vkBasalt\s+Profile:', line, re.IGNORECASE):
+                    lines[i] = new_tag
+                    return '\n'.join(lines)
+        
+        # If no tag exists, add it at the beginning after any existing leading comments
+        insert_index = 0
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+            insert_index = i
+            break
+            
+        lines.insert(insert_index, new_tag)
+        return '\n'.join(lines)
         
     async def list_profiles(self) -> List[str]:
         """List available vkBasalt profiles"""
@@ -44,9 +80,17 @@ class Plugin:
                 if target.parent == self.profiles_dir:
                     return target.stem
                     
-            # Check if the content matches any profile
             if self.global_config.exists():
+                # Try to read profile name from tag first (faster and more reliable)
                 global_content = self.global_config.read_text()
+                profile_name = self._extract_profile_name_from_tag(global_content)
+                if profile_name:
+                    # Verify the profile actually exists
+                    profile_path = self.profiles_dir / f"{profile_name}.conf"
+                    if profile_path.exists():
+                        return profile_name
+                        
+                # Fall back to content comparison if tag is missing or invalid
                 for profile_file in self.profiles_dir.glob("*.conf"):
                     if profile_file.read_text() == global_content:
                         return profile_file.stem
@@ -67,12 +111,23 @@ class Plugin:
             # Ensure the config directory exists
             self.vkbasalt_config_dir.mkdir(parents=True, exist_ok=True)
             
+            # Read profile content and ensure it has a proper tag
+            content = profile_path.read_text()
+            tagged_name = self._extract_profile_name_from_tag(content)
+            
+            # Add tag if missing or incorrect
+            if tagged_name != profile_name:
+                content = self._ensure_profile_tag_in_content(content, profile_name)
+                # Update the original profile file with the tag
+                profile_path.write_text(content)
+                decky.logger.info(f"Updated tag in profile during activation: {profile_name}")
+            
             # Remove existing global config if it exists
             if self.global_config.exists() or self.global_config.is_symlink():
                 self.global_config.unlink()
                 
-            # Copy the profile to global config
-            shutil.copy2(profile_path, self.global_config)
+            # Write the tagged content to global config
+            self.global_config.write_text(content)
             
             decky.logger.info(f"Activated profile: {profile_name}")
             return True
@@ -95,6 +150,69 @@ class Plugin:
             return True
         except Exception as e:
             decky.logger.error(f"Error resetting profile: {e}")
+            return False
+
+    async def check_profile_tags(self) -> Dict[str, bool]:
+        """Check which profiles have proper name tags"""
+        try:
+            result = {}
+            if not self.profiles_dir.exists():
+                return result
+                
+            for profile_file in self.profiles_dir.glob("*.conf"):
+                profile_name = profile_file.stem
+                content = profile_file.read_text()
+                tagged_name = self._extract_profile_name_from_tag(content)
+                # Profile is properly tagged if it has a tag matching its filename
+                result[profile_name] = tagged_name == profile_name
+                
+            decky.logger.info(f"Profile tag check result: {result}")
+            return result
+        except Exception as e:
+            decky.logger.error(f"Error checking profile tags: {e}")
+            return {}
+
+    async def patch_untagged_profiles(self) -> bool:
+        """Add missing name tags to profiles that don't have them"""
+        try:
+            if not self.profiles_dir.exists():
+                return False
+                
+            patched_any = False
+            for profile_file in self.profiles_dir.glob("*.conf"):
+                profile_name = profile_file.stem
+                content = profile_file.read_text()
+                tagged_name = self._extract_profile_name_from_tag(content)
+                
+                # Add tag if missing or incorrect
+                if tagged_name != profile_name:
+                    new_content = self._ensure_profile_tag_in_content(content, profile_name)
+                    profile_file.write_text(new_content)
+                    decky.logger.info(f"Updated tag in profile: {profile_name}")
+                    patched_any = True
+                    
+            return patched_any
+        except Exception as e:
+            decky.logger.error(f"Error patching untagged profiles: {e}")
+            return False
+
+    async def is_global_profile_tagged(self) -> bool:
+        """Check if the currently active global profile has a proper tag"""
+        try:
+            if not self.global_config.exists():
+                return False
+                
+            content = self.global_config.read_text()
+            profile_name = self._extract_profile_name_from_tag(content)
+            
+            # Check if the tagged name corresponds to an existing profile
+            if profile_name:
+                profile_path = self.profiles_dir / f"{profile_name}.conf"
+                return profile_path.exists()
+                
+            return False
+        except Exception as e:
+            decky.logger.error(f"Error checking global profile tag: {e}")
             return False
 
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
