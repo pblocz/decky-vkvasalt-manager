@@ -114,6 +114,8 @@ The backend will follow the [Decky plugin template](https://github.com/SteamDeck
   Ensure profiles contain name tags as comments for identification, and patch missing tags when needed. document accordingly
 * **Enable on launch toggle**
   Enable or disable the `enableOnLaunch = True` flag in the global profile configuration, and report current status.
+* **Configuration viewing**
+  Read and return the contents of the global `vkBasalt.conf` and individual profile configuration files for display in the UI.
 
 ### 3.2 Plugin API methods
 
@@ -128,6 +130,8 @@ These methods will be exposed via the Decky backend (`backend.py` in the templat
 * `is_global_profile_tagged() → bool`
 * `get_enable_on_launch_status() → bool`
 * `set_enable_on_launch(enabled: bool) → bool`
+* `get_global_config() → str`
+* `get_profile_config(name: str) → str`
 
 ---
 
@@ -153,10 +157,14 @@ Since Decky plugins run in a **sidebar**, the UI should be minimal and navigable
 
 * **Profile List (scrollable):**
 
-  * Each profile has two options:
+  * Each profile has three options:
 
     1. **[Activate Globally]** → sets it as global `vkBasalt.conf`
     2. **[Copy Steam Command]** → copies launch option string to clipboard
+    3. **[View Config]** → opens modal showing profile configuration contents
+
+* **View Global Config Button:**
+  * Button to view current global `vkBasalt.conf` contents in a modal
 
 
 ### Example Flow
@@ -167,22 +175,28 @@ vkBasalt Profile Manager
 Active Profile: CAS Sharpening
 Enable on Launch: ON [Toggle]
 
+[View Global Config]
+
 Profiles:
   Default
   [Activate]
   [Copy Steam Cmd] 
+  [View Config]
   ---
   CAS Sharpening  (active)
   [Activate]
   [Copy Steam Cmd] 
+  [View Config]
   ---
   Vibrant Colors
   [Activate]
   [Copy Steam Cmd] 
+  [View Config]
   ---
   FXAA + SMAA
   [Activate]
   [Copy Steam Cmd] 
+  [View Config]
   ---
 ```
 
@@ -226,7 +240,8 @@ vkbasalt-decky-plugin/
 │   ├── utils/
 │   │   └── clipboardUtils.ts  # Reliable clipboard utilities for gaming mode
 │   └── components/
-│       └── ProfileList.tsx
+│       ├── ProfileList.tsx
+│       └── ConfigModal.tsx  # Modal component for displaying configuration contents
 │
 │── package.json   # Decky frontend metadata
 │
@@ -323,3 +338,57 @@ The `enableOnLaunch` flag in vkBasalt configuration:
 - When `enableOnLaunch = True`: vkBasalt automatically applies effects to all Vulkan applications
 - When `enableOnLaunch = False` or absent: vkBasalt only activates with explicit environment variables
 - This provides a global on/off switch independent of profile selection
+
+### 3.4 ConfigModal Component
+
+The `ConfigModal` component (`src/components/ConfigModal.tsx`) provides a modal dialog for displaying configuration file contents in a user-friendly format.
+
+#### Features
+
+* **Syntax highlighting** - Configuration files are displayed with appropriate syntax highlighting for better readability
+* **Scrollable content** - Large configuration files can be scrolled within the modal
+* **Copy to clipboard** - Users can copy the entire configuration content to clipboard
+* **Responsive design** - Modal adapts to different screen sizes and orientations
+* **Steam Deck optimized** - Button layout and navigation designed for gamepad controls
+
+#### Props Interface
+
+```typescript
+interface ConfigModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  content: string;
+  profileName?: string;
+}
+```
+
+#### Usage Examples
+
+**Global Configuration Modal:**
+```typescript
+<ConfigModal
+  isOpen={showGlobalConfig}
+  onClose={() => setShowGlobalConfig(false)}
+  title="Global vkBasalt Configuration"
+  content={globalConfigContent}
+/>
+```
+
+**Profile Configuration Modal:**
+```typescript
+<ConfigModal
+  isOpen={showProfileConfig}
+  onClose={() => setShowProfileConfig(false)}
+  title={`Profile Configuration: ${selectedProfile}`}
+  content={profileConfigContent}
+  profileName={selectedProfile}
+/>
+```
+
+#### Backend Integration
+
+The modal component integrates with these backend methods:
+* `get_global_config()` - Retrieves current global configuration
+* `get_profile_config(name: str)` - Retrieves specific profile configuration
+````

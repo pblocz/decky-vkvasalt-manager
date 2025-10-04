@@ -272,6 +272,28 @@ class Plugin:
             decky.logger.error(f"Error setting enable on launch: {e}")
             return False
 
+    async def get_global_config(self) -> str:
+        """Get the contents of the global vkBasalt configuration file"""
+        try:
+            if not self.global_config.exists():
+                return ""
+            return self.global_config.read_text()
+        except Exception as e:
+            decky.logger.error(f"Error reading global config: {e}")
+            return ""
+
+    async def get_profile_config(self, profile_name: str) -> str:
+        """Get the contents of a specific profile configuration file"""
+        try:
+            profile_path = self.profiles_dir / f"{profile_name}.conf"
+            if not profile_path.exists():
+                decky.logger.error(f"Profile {profile_name} does not exist")
+                return ""
+            return profile_path.read_text()
+        except Exception as e:
+            decky.logger.error(f"Error reading profile config {profile_name}: {e}")
+            return ""
+
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
         self.loop = asyncio.get_event_loop()
