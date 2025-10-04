@@ -1,4 +1,4 @@
-This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky plugin template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
+This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky](https://github.com/SteamDeckHomebrew/decky-plugin-template).
 
 Here’s the updated **Project Definition Document**:
 
@@ -83,6 +83,7 @@ The **vkbasalt-manager** ([GitHub][2]) project provides an easy way to install v
     ```
   * User can paste it into Steam’s game Launch Options
 
+
 ### Deferred Features (Future)
 
 * Profile editing (parameters, shader toggles)
@@ -111,6 +112,8 @@ The backend will follow the [Decky plugin template](https://github.com/SteamDeck
   Remove or replace `vkBasalt.conf` with a blank/default version.
 * **Profile tagging**
   Ensure profiles contain name tags as comments for identification, and patch missing tags when needed. document accordingly
+* **Enable on launch toggle**
+  Enable or disable the `enableOnLaunch = True` flag in the global profile configuration, and report current status.
 
 ### 3.2 Plugin API methods
 
@@ -123,6 +126,8 @@ These methods will be exposed via the Decky backend (`backend.py` in the templat
 * `check_profile_tags() → dict[str, bool]`
 * `patch_untagged_profiles() → bool`
 * `is_global_profile_tagged() → bool`
+* `get_enable_on_launch_status() → bool`
+* `set_enable_on_launch(enabled: bool) → bool`
 
 ---
 
@@ -160,6 +165,7 @@ Since Decky plugins run in a **sidebar**, the UI should be minimal and navigable
 vkBasalt Profile Manager
 -------------------------
 Active Profile: CAS Sharpening
+Enable on Launch: ON [Toggle]
 
 Profiles:
   Default
@@ -249,7 +255,7 @@ The plugin includes specialized clipboard utilities (`src/utils/clipboardUtils.t
 
 ---
 
-### 3.3 Profile Tagging System
+### 3.1 Profile Tagging System
 
 Each vkBasalt profile should contain a comment tag at the top identifying its name. This enables the plugin to identify which profile is currently active by reading the global `vkBasalt.conf` file.
 
@@ -285,3 +291,35 @@ The plugin can determine the active profile in two ways:
 2. **By tag reading** - Read the profile tag from the global config (faster and more reliable)
 
 If the global config lacks a tag, the plugin should offer to patch it or fall back to file comparison.
+
+
+### 3.2 Enable on Launch Implementation
+
+The `enableOnLaunch` feature allows users to control whether vkBasalt automatically activates when games start, without requiring manual environment variable setup.
+
+#### Backend Implementation (`main.py`)
+
+* **`get_enable_on_launch_status() → bool`**
+  - Reads the global `vkBasalt.conf` file
+  - Searches for `enableOnLaunch = True` line
+  - Returns `True` if found and enabled, `False` otherwise
+
+* **`set_enable_on_launch(enabled: bool) → bool`**
+  - Modifies the global `vkBasalt.conf` file
+  - Adds/removes/updates the `enableOnLaunch = True/False` line
+  - Preserves other configuration settings
+  - Returns success status
+
+#### Frontend Implementation (`src/components/ProfileList.tsx`)
+
+* Toggle switch component showing current enableOnLaunch status
+* Calls backend methods when user toggles the switch
+* Displays loading state during toggle operation
+* Shows toast notifications for success/failure feedback
+
+#### Configuration Details
+
+The `enableOnLaunch` flag in vkBasalt configuration:
+- When `enableOnLaunch = True`: vkBasalt automatically applies effects to all Vulkan applications
+- When `enableOnLaunch = False` or absent: vkBasalt only activates with explicit environment variables
+- This provides a global on/off switch independent of profile selection
