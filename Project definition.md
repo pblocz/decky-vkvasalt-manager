@@ -175,6 +175,8 @@ vkBasalt Profile Manager
 Active Profile: CAS Sharpening
 Enable on Launch: ON [Toggle]
 
+[View Global Config]
+
 Profiles:
   Default
   [Activate]
@@ -196,8 +198,6 @@ Profiles:
   [Copy Steam Cmd] 
   [View Config]
   ---
-
-[View Global Config]
 ```
 
 1. User opens Decky sidebar.

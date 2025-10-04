@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { VscSettingsGear } from "react-icons/vsc";
 import { copyWithVerification } from "./utils/clipboardUtils";
+import { showConfigModal } from "./components/ConfigModal";
 
 // Backend function calls
 const listProfiles = callable<[], string[]>("list_profiles");
@@ -25,6 +26,8 @@ const patchUntaggedProfiles = callable<[], boolean>("patch_untagged_profiles");
 const isGlobalProfileTagged = callable<[], boolean>("is_global_profile_tagged");
 const getEnableOnLaunchStatus = callable<[], boolean>("get_enable_on_launch_status");
 const setEnableOnLaunch = callable<[enabled: boolean], boolean>("set_enable_on_launch");
+const getGlobalConfig = callable<[], string>("get_global_config");
+const getProfileConfig = callable<[profile_name: string], string>("get_profile_config");
 
 interface ProfileItemProps {
   profileName: string;
@@ -32,9 +35,10 @@ interface ProfileItemProps {
   isTagged: boolean;
   onActivate: (profileName: string) => void;
   onCopySteamCommand: (profileName: string) => void;
+  onViewConfig: (profileName: string) => void;
 }
 
-function ProfileItem({ profileName, isActive, isTagged, onActivate, onCopySteamCommand }: ProfileItemProps) {
+function ProfileItem({ profileName, isActive, isTagged, onActivate, onCopySteamCommand, onViewConfig }: ProfileItemProps) {
   return (
     <>
       <PanelSectionRow>
@@ -57,10 +61,21 @@ function ProfileItem({ profileName, isActive, isTagged, onActivate, onCopySteamC
       <PanelSectionRow>
         <ButtonItem
           layout="below"
+          bottomSeparator="none"
           onClick={() => onCopySteamCommand(profileName)}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             Copy Steam Cmd
+          </div>
+        </ButtonItem>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          onClick={() => onViewConfig(profileName)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            View Config
           </div>
         </ButtonItem>
       </PanelSectionRow>
@@ -152,6 +167,39 @@ function Content() {
       toaster.toast({
         title: "Error",
         body: "Failed to copy Steam command"
+      });
+    }
+  };
+
+  const handleViewConfig = async (profileName: string) => {
+    try {
+      const config = await getProfileConfig(profileName);
+      showConfigModal(
+        `Profile Configuration: ${profileName}`,
+        config,
+        profileName
+      );
+    } catch (error) {
+      console.error('Failed to load profile config:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to load profile configuration"
+      });
+    }
+  };
+
+  const handleViewGlobalConfig = async () => {
+    try {
+      const config = await getGlobalConfig();
+      showConfigModal(
+        "Global vkBasalt Configuration",
+        config || "No global configuration found"
+      );
+    } catch (error) {
+      console.error('Failed to load global config:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to load global configuration"
       });
     }
   };
@@ -290,6 +338,14 @@ function Content() {
       <PanelSectionRow>
         <ButtonItem
           layout="below"
+          onClick={handleViewGlobalConfig}
+        >
+          View Global Config
+        </ButtonItem>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
           onClick={handleResetProfile}
         >
           Disable
@@ -319,6 +375,7 @@ function Content() {
           isTagged={profileTags[profile] ?? false}
           onActivate={handleActivateProfile}
           onCopySteamCommand={handleCopySteamCommand}
+          onViewConfig={handleViewConfig}
         />
       ))}
     </PanelSection>
