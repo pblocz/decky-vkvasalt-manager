@@ -11,6 +11,8 @@ import {
 import { useState, useEffect } from "react";
 import { copyWithVerification } from "../utils/clipboardUtils";
 import { showConfigModal } from "./ConfigModal";
+import { ProfileItem } from "./ProfileItem";
+import { MaintenanceSection } from "./MaintenanceSection";
 
 // Backend function calls
 const listProfiles = callable<[], string[]>("list_profiles");
@@ -26,59 +28,7 @@ const setEnableOnLaunch = callable<[enabled: boolean], boolean>("set_enable_on_l
 const getGlobalConfig = callable<[], string>("get_global_config");
 const getProfileConfig = callable<[profile_name: string], string>("get_profile_config");
 
-interface ProfileItemProps {
-  profileName: string;
-  isActive: boolean;
-  isTagged: boolean;
-  onActivate: (profileName: string) => void;
-  onCopySteamCommand: (profileName: string) => void;
-  onViewConfig: (profileName: string) => void;
-}
 
-function ProfileItem({ profileName, isActive, isTagged, onActivate, onCopySteamCommand, onViewConfig }: ProfileItemProps) {
-  return (
-    <>
-      <PanelSectionRow>
-        <div style={{ fontSize: '14px', fontWeight: '500' }}>
-          {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
-          {!isTagged && <span style={{ color: '#FF9800', fontSize: '12px' }}>(untagged)</span>}
-        </div>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          bottomSeparator="none"
-          onClick={() => onActivate(profileName)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Activate
-          </div>
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          bottomSeparator="none"
-          onClick={() => onCopySteamCommand(profileName)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Copy Steam Cmd
-          </div>
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => onViewConfig(profileName)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            View Config
-          </div>
-        </ButtonItem>
-      </PanelSectionRow>
-    </>
-  );
-}
 
 export function Content() {
   const [profiles, setProfiles] = useState<string[]>([]);
@@ -349,20 +299,12 @@ export function Content() {
         </ButtonItem>
       </PanelSectionRow>
 
-      {/* Show maintenance section if there are untagged profiles or global profile is untagged */}
-      {(Object.values(profileTags).some(tagged => !tagged) || (activeProfile && !globalTagged)) && (
-        <PanelSectionRow>
-          <div style={{ fontSize: '12px', color: '#FF9800', marginBottom: '4px' }}>
-            Some profiles need maintenance
-          </div>
-          <ButtonItem
-            layout="below"
-            onClick={handlePatchProfiles}
-          >
-            Fix Profile Tags
-          </ButtonItem>
-        </PanelSectionRow>
-      )}
+      <MaintenanceSection
+        profileTags={profileTags}
+        activeProfile={activeProfile}
+        globalTagged={globalTagged}
+        onPatchProfiles={handlePatchProfiles}
+      />
 
       {profiles.map((profile) => (
         <ProfileItem
