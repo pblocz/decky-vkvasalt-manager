@@ -2,7 +2,6 @@ import {
   ButtonItem,
   PanelSection,
   PanelSectionRow,
-  ToggleField,
 } from "@decky/ui";
 import {
   callable,
@@ -13,6 +12,7 @@ import { copyWithVerification } from "../utils/clipboardUtils";
 import { showConfigModal } from "./ConfigModal";
 import { ProfileItem } from "./ProfileItem";
 import { MaintenanceSection } from "./MaintenanceSection";
+import { GlobalProfile } from "./GlobalProfile";
 
 // Backend function calls
 const listProfiles = callable<[], string[]>("list_profiles");
@@ -258,46 +258,15 @@ export function Content() {
 
   return (
     <PanelSection title="vkBasalt Profile Manager">
-      <PanelSectionRow>
-        <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-          <strong>Active Profile:</strong> {activeProfile || "None"}
-        </div>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <ToggleField
-          label="Enable on Launch"
-          description="Automatically enable vkBasalt when games start"
-          checked={enableOnLaunch}
-          disabled={enableOnLaunchLoading}
-          onChange={handleToggleEnableOnLaunch}
-        />
-      </PanelSectionRow>
-      
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={refreshProfiles}
-        >
-          Refresh
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={handleViewGlobalConfig}
-        >
-          View Global Config
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={handleResetProfile}
-        >
-          Disable
-        </ButtonItem>
-      </PanelSectionRow>
+      <GlobalProfile
+        activeProfile={activeProfile}
+        enableOnLaunch={enableOnLaunch}
+        enableOnLaunchLoading={enableOnLaunchLoading}
+        onToggleEnableOnLaunch={handleToggleEnableOnLaunch}
+        onRefresh={refreshProfiles}
+        onViewGlobalConfig={handleViewGlobalConfig}
+        onResetProfile={handleResetProfile}
+      />
 
       <MaintenanceSection
         profileTags={profileTags}
