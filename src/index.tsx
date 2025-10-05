@@ -3,6 +3,7 @@ import {
   PanelSection,
   PanelSectionRow,
   ToggleField,
+  Dropdown,
   staticClasses
 } from "@decky/ui";
 import {
@@ -29,63 +30,10 @@ const setEnableOnLaunch = callable<[enabled: boolean], boolean>("set_enable_on_l
 const getGlobalConfig = callable<[], string>("get_global_config");
 const getProfileConfig = callable<[profile_name: string], string>("get_profile_config");
 
-interface ProfileItemProps {
-  profileName: string;
-  isActive: boolean;
-  isTagged: boolean;
-  onActivate: (profileName: string) => void;
-  onCopySteamCommand: (profileName: string) => void;
-  onViewConfig: (profileName: string) => void;
-}
-
-function ProfileItem({ profileName, isActive, isTagged, onActivate, onCopySteamCommand, onViewConfig }: ProfileItemProps) {
-  return (
-    <>
-      <PanelSectionRow>
-        <div style={{ fontSize: '14px', fontWeight: '500' }}>
-          {profileName} {isActive && <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>}
-          {!isTagged && <span style={{ color: '#FF9800', fontSize: '12px' }}>(untagged)</span>}
-        </div>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          bottomSeparator="none"
-          onClick={() => onActivate(profileName)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Activate
-          </div>
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          bottomSeparator="none"
-          onClick={() => onCopySteamCommand(profileName)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Copy Steam Cmd
-          </div>
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => onViewConfig(profileName)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            View Config
-          </div>
-        </ButtonItem>
-      </PanelSectionRow>
-    </>
-  );
-}
-
 function Content() {
   const [profiles, setProfiles] = useState<string[]>([]);
   const [activeProfile, setActiveProfile] = useState<string | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [profileTags, setProfileTags] = useState<Record<string, boolean>>({});
   const [globalTagged, setGlobalTagged] = useState<boolean>(false);
@@ -107,6 +55,13 @@ function Content() {
       setProfileTags(tags);
       setGlobalTagged(globalTag);
       setEnableOnLaunchState(enableStatus);
+      
+      // Set selected profile to active profile or first profile
+      if (active && profileList.includes(active)) {
+        setSelectedProfile(active);
+      } else if (profileList.length > 0) {
+        setSelectedProfile(profileList[0]);
+      }
     } catch (error) {
       console.error('Failed to load profiles:', error);
       toaster.toast({
@@ -122,19 +77,21 @@ function Content() {
     refreshProfiles();
   }, []);
 
-  const handleActivateProfile = async (profileName: string) => {
+  const handleActivateProfile = async () => {
+    if (!selectedProfile) return;
+    
     try {
-      const success = await activateProfileGlobally(profileName);
+      const success = await activateProfileGlobally(selectedProfile);
       if (success) {
-        setActiveProfile(profileName);
+        setActiveProfile(selectedProfile);
         toaster.toast({
           title: "Success",
-          body: `Activated profile: ${profileName}`
+          body: `Activated profile: ${selectedProfile}`
         });
       } else {
         toaster.toast({
           title: "Error",
-          body: `Failed to activate profile: ${profileName}`
+          body: `Failed to activate profile: ${selectedProfile}`
         });
       }
     } catch (error) {
@@ -146,9 +103,11 @@ function Content() {
     }
   };
 
-  const handleCopySteamCommand = async (profileName: string) => {
+  const handleCopySteamCommand = async () => {
+    if (!selectedProfile) return;
+    
     try {
-      const command = await getSteamCommand(profileName);
+      const command = await getSteamCommand(selectedProfile);
       const result = await copyWithVerification(command);
       
       if (result.success) {
@@ -171,13 +130,15 @@ function Content() {
     }
   };
 
-  const handleViewConfig = async (profileName: string) => {
+  const handleViewConfig = async () => {
+    if (!selectedProfile) return;
+    
     try {
-      const config = await getProfileConfig(profileName);
+      const config = await getProfileConfig(selectedProfile);
       showConfigModal(
-        `Profile Configuration: ${profileName}`,
+        `Profile Configuration: ${selectedProfile}`,
         config,
-        profileName
+        selectedProfile
       );
     } catch (error) {
       console.error('Failed to load profile config:', error);
@@ -279,6 +240,12 @@ function Content() {
     }
   };
 
+  // Create dropdown options
+  const dropdownOptions = profiles.map(profile => ({
+    data: profile,
+    label: profile === activeProfile ? `${profile} (active)` : profile
+  }));
+
   if (loading) {
     return (
       <PanelSection title="vkBasalt Profile Manager">
@@ -330,25 +297,80 @@ function Content() {
       <PanelSectionRow>
         <ButtonItem
           layout="below"
-          onClick={refreshProfiles}
-        >
-          Refresh
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
           onClick={handleViewGlobalConfig}
         >
           View Global Config
         </ButtonItem>
       </PanelSectionRow>
+
+      {/* Profile Selection Dropdown */}
+      <PanelSectionRow>
+        <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+          Select Profile:
+        </div>
+        <Dropdown
+          rgOptions={dropdownOptions}
+          selectedOption={selectedProfile}
+          onChange={(option) => setSelectedProfile(option.data)}
+          strDefaultLabel="Select a profile..."
+        />
+        {/* Show untagged warning for selected profile */}
+        {selectedProfile && !profileTags[selectedProfile] && (
+          <div style={{ fontSize: '12px', color: '#FF9800', marginTop: '4px' }}>
+            ⚠️ This profile is untagged
+          </div>
+        )}
+      </PanelSectionRow>
+
+      {/* Action Buttons for Selected Profile */}
+      {selectedProfile && (
+        <>
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              bottomSeparator="none"
+              onClick={handleActivateProfile}
+            >
+              Activate Globally
+            </ButtonItem>
+          </PanelSectionRow>
+          
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              bottomSeparator="none"
+              onClick={handleCopySteamCommand}
+            >
+              Copy Steam Command
+            </ButtonItem>
+          </PanelSectionRow>
+          
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              onClick={handleViewConfig}
+            >
+              View Config
+            </ButtonItem>
+          </PanelSectionRow>
+        </>
+      )}
+
       <PanelSectionRow>
         <ButtonItem
           layout="below"
           onClick={handleResetProfile}
         >
-          Disable
+          Disable vkBasalt
+        </ButtonItem>
+      </PanelSectionRow>
+
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          onClick={refreshProfiles}
+        >
+          Refresh
         </ButtonItem>
       </PanelSectionRow>
 
@@ -366,18 +388,6 @@ function Content() {
           </ButtonItem>
         </PanelSectionRow>
       )}
-
-      {profiles.map((profile) => (
-        <ProfileItem
-          key={profile}
-          profileName={profile}
-          isActive={profile === activeProfile}
-          isTagged={profileTags[profile] ?? false}
-          onActivate={handleActivateProfile}
-          onCopySteamCommand={handleCopySteamCommand}
-          onViewConfig={handleViewConfig}
-        />
-      ))}
     </PanelSection>
   );
 };

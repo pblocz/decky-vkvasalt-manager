@@ -1,4 +1,4 @@
-This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky](/SteamDeckHomebrew/decky-plugin-template).
+This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky](https://github.com/SteamDeckHomebrew/decky-plugin-template).
 
 Here’s the updated **Project Definition Document**:
 
