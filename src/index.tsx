@@ -4,7 +4,8 @@ import {
 import {
   definePlugin,
 } from "@decky/api"
-import { VscSettingsGear } from "react-icons/vsc";
+// import { GiStoneStack } from "react-icons/gi";
+import { GiStonePile } from "react-icons/gi";
 import { Content } from "./components/Content";
 
 
@@ -18,7 +19,7 @@ export default definePlugin(() => {
     // The content of your plugin's menu
     content: <Content />,
     // The icon displayed in the plugin list
-    icon: <VscSettingsGear />,
+    icon: <GiStonePile />,
     // The function triggered when your plugin unloads
     onDismount() {
       console.log("vkBasalt Profile Manager unloading")
