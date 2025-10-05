@@ -3,7 +3,7 @@ import {
   DropdownOption,
   PanelSectionRow,
 } from "@decky/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface DropdownProfileProps {
   profiles: string[];
@@ -29,6 +29,9 @@ export function DropdownProfile({
         console.log("Selected option:", option);
         setSelectedProfile(option.data);
     }
+    useEffect(() => {
+        console.log("Selected profile changed:", selectedProfile);
+    }, [selectedProfile]);
 
     console.log("DropdownProfile Render");
     console.log(dropdownOptions);
