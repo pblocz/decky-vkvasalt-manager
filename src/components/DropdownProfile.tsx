@@ -16,15 +16,12 @@ export function DropdownProfile({
 }: DropdownProfileProps) {
     const [selectedProfile, setSelectedProfile] = useState<string>(activeProfile || "");
 
-    useEffect( () => console.log("mount", selectedProfile), [] );
-    useEffect( () => () => console.log("unmount", selectedProfile), [] );
-
     // Update selectedProfile when activeProfile changes
-    // useEffect(() => {
-    //     if (activeProfile) {
-    //         setSelectedProfile(activeProfile);
-    //     }
-    // }, [activeProfile]);
+    useEffect(() => {
+        if (activeProfile) {
+            setSelectedProfile(activeProfile);
+        }
+    }, [activeProfile]);
 
     // Create dropdown options
     const dropdownOptions = profiles.map(profile => ({
@@ -32,22 +29,9 @@ export function DropdownProfile({
         label: profile === activeProfile ? `${profile} (active)` : profile
     }));
 
-    // Find the selected option object for the dropdown
-    const selectedOption = dropdownOptions.find(option => option.data === selectedProfile);
-
     const handleOptionChange = (option: DropdownOption) => {
-        console.log("Selected option:", option);
-        console.log("Selected option data:", option.data);
         setSelectedProfile(option.data);
     }
-    useEffect(() => {
-        console.log("Selected profile changed:", selectedProfile);
-    }, [selectedProfile]);
-
-    console.log("DropdownProfile Render");
-    console.log(dropdownOptions);
-    console.log(selectedOption);
-    console.log(selectedProfile);
 
     return (
       <PanelSectionRow>
