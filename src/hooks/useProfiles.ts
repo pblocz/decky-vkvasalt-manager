@@ -78,33 +78,6 @@ export function useProfiles() {
     }
   }, []);
 
-  const resetProfile = useCallback(async () => {
-    try {
-      const success = await VkBasaltService.resetProfile();
-      if (success) {
-        setState(prev => ({ ...prev, activeProfile: null }));
-        toaster.toast({
-          title: "Success",
-          body: "vkBasalt disabled"
-        });
-        return true;
-      } else {
-        toaster.toast({
-          title: "Error",
-          body: "Failed to reset profile"
-        });
-        return false;
-      }
-    } catch (error) {
-      console.error('Failed to reset profile:', error);
-      toaster.toast({
-        title: "Error",
-        body: "Failed to reset profile"
-      });
-      return false;
-    }
-  }, []);
-
   const patchProfiles = useCallback(async () => {
     try {
       const success = await VkBasaltService.patchUntaggedProfiles();
@@ -170,7 +143,6 @@ export function useProfiles() {
     ...state,
     refreshProfiles,
     activateProfile,
-    resetProfile,
     patchProfiles,
     toggleEnableOnLaunch,
   };

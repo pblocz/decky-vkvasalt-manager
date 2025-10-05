@@ -11,7 +11,6 @@ interface GlobalProfileProps {
   onToggleEnableOnLaunch: (enabled: boolean) => void;
   onRefresh: () => void;
   onViewGlobalConfig: () => void;
-  onResetProfile: () => void;
 }
 
 export function GlobalProfile({
@@ -20,8 +19,7 @@ export function GlobalProfile({
   enableOnLaunchLoading,
   onToggleEnableOnLaunch,
   onRefresh,
-  onViewGlobalConfig,
-  onResetProfile
+  onViewGlobalConfig
 }: GlobalProfileProps) {
   return (
     <>
@@ -55,14 +53,6 @@ export function GlobalProfile({
           onClick={onViewGlobalConfig}
         >
           View Global Config
-        </ButtonItem>
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={onResetProfile}
-        >
-          Disable
         </ButtonItem>
       </PanelSectionRow>
     </>

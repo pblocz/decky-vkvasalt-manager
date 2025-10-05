@@ -26,7 +26,6 @@ export function Content() {
         enableOnLaunchLoading,
         refreshProfiles,
         activateProfile,
-        resetProfile,
         patchProfiles,
         toggleEnableOnLaunch
     } = profileState;
@@ -76,7 +75,6 @@ export function Content() {
                 onToggleEnableOnLaunch={toggleEnableOnLaunch}
                 onRefresh={refreshProfiles}
                 onViewGlobalConfig={viewGlobalConfig}
-                onResetProfile={resetProfile}
             />
 
             <MaintenanceSection
