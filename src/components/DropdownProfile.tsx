@@ -1,5 +1,6 @@
 import {
   Dropdown,
+  DropdownOption,
   PanelSectionRow,
 } from "@decky/ui";
 import { useState } from "react";
@@ -24,6 +25,11 @@ export function DropdownProfile({
     // Find the selected option object for the dropdown
     const selectedOption = dropdownOptions.find(option => option.data === selectedProfile);
 
+    const handleOptionChange = (option: DropdownOption) => {
+        console.log("Selected option:", option);
+        setSelectedProfile(option.data);
+    }
+
     console.log("DropdownProfile Render");
     console.log(dropdownOptions);
     console.log(selectedOption);
@@ -37,7 +43,7 @@ export function DropdownProfile({
         <Dropdown
           rgOptions={dropdownOptions}
           selectedOption={selectedOption}
-          onChange={(option) => setSelectedProfile(option.data)}
+          onChange={handleOptionChange}
           strDefaultLabel="Select a profile..."
         />
         </PanelSectionRow>
