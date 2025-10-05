@@ -3,10 +3,9 @@ import {
     PanelSection,
     PanelSectionRow,
 } from "@decky/ui";
-import { ProfileItem } from "./ProfileItem";
+import { ProfileSection } from "./ProfileSection";
 import { MaintenanceSection } from "./MaintenanceSection";
 import { GlobalProfile } from "./GlobalProfile";
-import { DropdownProfile } from "./DropdownProfile";
 import { useProfiles } from "../hooks/useProfiles";
 import { useProfileActions } from "../hooks/useProfileActions";
 
@@ -87,22 +86,14 @@ export function Content() {
                 onPatchProfiles={patchProfiles}
             />
 
-            <DropdownProfile
+            <ProfileSection
                 profiles={profiles}
                 activeProfile={activeProfile}
+                profileTags={profileTags}
+                onActivate={activateProfile}
+                onCopySteamCommand={copySteamCommand}
+                onViewConfig={viewProfileConfig}
             />
-
-            {profiles.map((profile) => (
-                <ProfileItem
-                    key={profile}
-                    profileName={profile}
-                    isActive={profile === activeProfile}
-                    isTagged={profileTags[profile] ?? false}
-                    onActivate={activateProfile}
-                    onCopySteamCommand={copySteamCommand}
-                    onViewConfig={viewProfileConfig}
-                />
-            ))}
         </PanelSection>
     );
 }
