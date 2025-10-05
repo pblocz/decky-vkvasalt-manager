@@ -20,6 +20,10 @@ export default definePlugin(() => {
     content: <Content />,
     // The icon displayed in the plugin list
     icon: <GiStoneStack />,
+
+    // Prevent state being lost for dropdowns, as it triggers unmount/mount
+    alwaysRender: true,
+
     // The function triggered when your plugin unloads
     onDismount() {
       console.log("vkBasalt Profile Manager unloading")
