@@ -237,11 +237,19 @@ vkbasalt-decky-plugin/
 │
 │── src/
 │   ├── index.tsx  # React entrypoint, Decky UI sidebar
+│   ├── services/
+│   │   └── vkBasaltService.ts  # Centralized API service layer
+│   ├── hooks/
+│   │   ├── useProfiles.ts      # Profile state management hook
+│   │   └── useProfileActions.ts # Profile action hooks (copy, view config)
 │   ├── utils/
-│   │   └── clipboardUtils.ts  # Reliable clipboard utilities for gaming mode
+│   │   └── clipboardUtils.ts   # Reliable clipboard utilities for gaming mode
 │   └── components/
-│       ├── ProfileList.tsx
-│       └── ConfigModal.tsx  # Modal component for displaying configuration contents
+│       ├── Content.tsx         # Main component (simplified with hooks)
+│       ├── ProfileItem.tsx     # Individual profile list item
+│       ├── GlobalProfile.tsx   # Global profile controls
+│       ├── MaintenanceSection.tsx # Profile maintenance utilities
+│       └── ConfigModal.tsx     # Modal component for displaying configurations
 │
 │── package.json   # Decky frontend metadata
 │
@@ -251,11 +259,47 @@ vkbasalt-decky-plugin/
 └── LICENSE(.md) [required, filename should be roughly similar, suffix not needed]
 ```
 
-### 2. Clipboard Utilities
+### 2. Architecture Overview
+
+The frontend follows a clean architecture pattern with separation of concerns:
+
+#### 2.1 Service Layer (`src/services/`)
+- **`vkBasaltService.ts`**: Centralized API service that provides a clean abstraction over all backend calls
+- Includes a `loadInitialData()` method that efficiently fetches all required data in parallel
+- All backend callable functions are organized in a single class for maintainability
+
+#### 2.2 Custom Hooks (`src/hooks/`)
+- **`useProfiles.ts`**: Manages all profile-related state and business logic
+  - Handles loading, activating, resetting profiles
+  - Manages enable-on-launch toggle
+  - Provides profile tagging and maintenance operations
+- **`useProfileActions.ts`**: Handles user actions like copying commands and viewing configurations
+  - Separated from state management for better code organization
+  - Includes error handling and user feedback via toasts
+
+#### 2.3 Components (`src/components/`)
+- **`Content.tsx`**: Main container component, now much simpler and focused on UI coordination
+- **`ProfileItem.tsx`**: Reusable component for individual profile display
+- **`GlobalProfile.tsx`**: Controls for active profile and global settings
+- **`MaintenanceSection.tsx`**: Profile maintenance utilities (tagging, etc.)
+- **`ConfigModal.tsx`**: Modal for displaying configuration contents
+
+#### 2.4 Architecture Benefits
+
+This new structure provides several advantages:
+
+- **Separation of Concerns**: Business logic, API calls, and UI rendering are clearly separated
+- **Reusability**: Custom hooks can be easily reused or tested independently
+- **Maintainability**: Changes to API structure only require updates in the service layer
+- **Testability**: Each layer can be unit tested in isolation
+- **Performance**: Parallel data loading and optimized re-renders through focused state management
+- **Developer Experience**: Cleaner, more readable code with clear responsibilities
+
+### 3. Clipboard Utilities
 
 The plugin includes specialized clipboard utilities (`src/utils/clipboardUtils.ts`) designed to work reliably in Steam Deck's gaming mode environment. These utilities provide multiple fallback methods for copying text, including the proven input simulation method that works when standard clipboard APIs may fail.
 
-### 2. `plugin.json`
+### 4. `plugin.json`
 ```
 {
   "name": "vkBasalt Profile Manager",
@@ -270,7 +314,7 @@ The plugin includes specialized clipboard utilities (`src/utils/clipboardUtils.t
 
 ---
 
-### 3.1 Profile Tagging System
+### 5.1 Profile Tagging System
 
 Each vkBasalt profile should contain a comment tag at the top identifying its name. This enables the plugin to identify which profile is currently active by reading the global `vkBasalt.conf` file.
 
@@ -308,7 +352,7 @@ The plugin can determine the active profile in two ways:
 If the global config lacks a tag, the plugin should offer to patch it or fall back to file comparison.
 
 
-### 3.2 Enable on Launch Implementation
+### 5.2 Enable on Launch Implementation
 
 The `enableOnLaunch` feature allows users to control whether vkBasalt automatically activates when games start, without requiring manual environment variable setup.
 
@@ -325,12 +369,13 @@ The `enableOnLaunch` feature allows users to control whether vkBasalt automatica
   - Preserves other configuration settings
   - Returns success status
 
-#### Frontend Implementation (`src/components/ProfileList.tsx`)
+#### Frontend Implementation (`src/hooks/useProfiles.ts` & `src/components/GlobalProfile.tsx`)
 
-* Toggle switch component showing current enableOnLaunch status
-* Calls backend methods when user toggles the switch
+* Toggle switch component in `GlobalProfile.tsx` showing current enableOnLaunch status
+* Business logic handled in `useProfiles.ts` hook with `toggleEnableOnLaunch` method
 * Displays loading state during toggle operation
 * Shows toast notifications for success/failure feedback
+* State management is centralized and reusable across components
 
 #### Configuration Details
 
@@ -339,7 +384,7 @@ The `enableOnLaunch` flag in vkBasalt configuration:
 - When `enableOnLaunch = False` or absent: vkBasalt only activates with explicit environment variables
 - This provides a global on/off switch independent of profile selection
 
-### 3.4 ConfigModal Component
+### 5.3 ConfigModal Component
 
 The `ConfigModal` component (`src/components/ConfigModal.tsx`) provides a modal dialog for displaying configuration file contents in a user-friendly format.
 
