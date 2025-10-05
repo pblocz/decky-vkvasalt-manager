@@ -17,11 +17,11 @@ export function DropdownProfile({
     const [selectedProfile, setSelectedProfile] = useState<string>(activeProfile || "");
 
     // Update selectedProfile when activeProfile changes
-    useEffect(() => {
-        if (activeProfile) {
-            setSelectedProfile(activeProfile);
-        }
-    }, [activeProfile]);
+    // useEffect(() => {
+    //     if (activeProfile) {
+    //         setSelectedProfile(activeProfile);
+    //     }
+    // }, [activeProfile]);
 
     // Create dropdown options
     const dropdownOptions = profiles.map(profile => ({
