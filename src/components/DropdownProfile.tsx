@@ -24,6 +24,10 @@ export function DropdownProfile({
     // Find the selected option object for the dropdown
     const selectedOption = dropdownOptions.find(option => option.data === selectedProfile);
 
+    console.log("DropdownProfile Render");
+    console.log(dropdownOptions);
+    console.log(selectedOption);
+    console.log(selectedProfile);
 
     return (
       <PanelSectionRow>
