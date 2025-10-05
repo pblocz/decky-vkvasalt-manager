@@ -16,6 +16,9 @@ export function DropdownProfile({
 }: DropdownProfileProps) {
     const [selectedProfile, setSelectedProfile] = useState<string>(activeProfile || "");
 
+    useEffect( () => console.log("mount", selectedProfile), [] );
+    useEffect( () => () => console.log("unmount", selectedProfile), [] );
+
     // Update selectedProfile when activeProfile changes
     // useEffect(() => {
     //     if (activeProfile) {
