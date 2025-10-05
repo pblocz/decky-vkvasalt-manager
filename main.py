@@ -1,8 +1,9 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import Any, List, Optional, Dict
 import re
+from vkbasalt_conf import parse_config
 
 # The decky plugin module is located at decky-loader/plugin
 # For easy intellisense checkout the decky-loader code repo
@@ -314,3 +315,20 @@ class Plugin:
     # Migrations that should be performed before entering `_main()`.
     async def _migration(self):
         decky.logger.info("vkBasalt Profile Manager migration")
+
+
+    ###
+    ### config editing and parsing functions
+    ###
+
+    async def get_parsed_profile_config(self, profile_name: str) -> Dict[str, Any]:
+        """Get the contents of a specific profile configuration file"""
+        try:
+            profile_path = self.profiles_dir / f"{profile_name}.conf"
+            if not profile_path.exists():
+                decky.logger.error(f"Profile {profile_name} does not exist")
+                return {}
+            return parse_config(profile_path)
+        except Exception as e:
+            decky.logger.error(f"Error reading profile config {profile_name}: {e}")
+            return {}

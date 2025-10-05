@@ -22,6 +22,9 @@ export class VkBasaltService {
   static readonly getGlobalConfig = callable<[], string>("get_global_config");
   static readonly getProfileConfig = callable<[profile_name: string], string>("get_profile_config");
 
+  // Configuration editing
+  static readonly getParsedProfileConfig = callable<[profile_name: string], Record<string, any>>("get_parsed_profile_config");
+
   /**
    * Load all initial data needed for the profile manager
    */

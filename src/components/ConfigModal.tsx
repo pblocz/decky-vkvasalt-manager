@@ -1,4 +1,4 @@
-import { VFC } from "react";
+import { useEffect, VFC } from "react";
 import {
   DialogButton,
   Field,
@@ -8,6 +8,8 @@ import {
   showModal,
 } from "@decky/ui";
 import { copyToClipboard } from "../utils/clipboardUtils";
+import { VkBasaltService } from "../services/vkBasaltService";
+import React from "react";
 
 interface ConfigModalProps extends ModalRootProps {
   title: string;
@@ -22,6 +24,8 @@ const ConfigModal: VFC<ConfigModalProps> = ({
   closeModal,
   ...modalProps
 }) => {
+  const [parsedConfig, setParsedConfig] = React.useState<Record<string, any> | null>(null);
+
   const handleCopyToClipboard = async () => {
     try {
       await copyToClipboard(content);
@@ -31,6 +35,21 @@ const ConfigModal: VFC<ConfigModalProps> = ({
       console.error("Failed to copy to clipboard:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchParsedConfig = async () => {
+      if (profileName) {
+        try {
+          const parsed = await VkBasaltService.getParsedProfileConfig(profileName);
+          setParsedConfig(parsed);
+        } catch (error) {
+          console.error("Failed to fetch parsed config:", error);
+        }
+      }
+    };
+
+    fetchParsedConfig();
+  }, [profileName]);
 
   return (
     <ModalRoot {...modalProps} closeModal={closeModal}>
@@ -52,6 +71,33 @@ const ConfigModal: VFC<ConfigModalProps> = ({
         }}>
           <textarea
             value={content}
+            readOnly
+            style={{
+              flex: 1,
+              fontFamily: "monospace",
+              fontSize: "12px",
+              backgroundColor: "#1a1a1a",
+              color: "#e0e0e0",
+              border: "1px solid #444",
+              borderRadius: "4px",
+              padding: "10px",
+              overflow: "auto",
+              whiteSpace: "pre",
+              wordWrap: "break-word",
+              resize: "none"
+            }}
+          />
+        </div>
+
+        <div style={{ 
+          flex: 1, 
+          marginBottom: "20px", 
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column"
+        }}>
+          <textarea
+            value={parsedConfig ? JSON.stringify(parsedConfig, null, 2) : "No parsed config available"}
             readOnly
             style={{
               flex: 1,
