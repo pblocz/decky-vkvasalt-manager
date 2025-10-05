@@ -27,6 +27,7 @@ export function DropdownProfile({
 
     const handleOptionChange = (option: DropdownOption) => {
         console.log("Selected option:", option);
+        console.log("Selected option data:", option.data);
         setSelectedProfile(option.data);
     }
     useEffect(() => {
