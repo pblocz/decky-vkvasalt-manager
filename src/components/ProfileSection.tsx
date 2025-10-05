@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  PanelSectionRow,
-  ButtonItem,
-  Dropdown,
-  DropdownOption,
-} from "@decky/ui";
+import { DropdownProfile } from "./DropdownProfile";
+import { ProfileItem } from "./ProfileItem";
 
 interface ProfileSectionProps {
   profiles: string[];
@@ -32,78 +28,27 @@ export function ProfileSection({
     }
   }, [activeProfile]);
 
-  // Create dropdown options
-  const dropdownOptions = profiles.map(profile => ({
-    data: profile,
-    label: profile === activeProfile ? `${profile} (active)` : profile
-  }));
-
-  const handleOptionChange = (option: DropdownOption) => {
-    setSelectedProfile(option.data);
+  const handleProfileSelect = (profileName: string) => {
+    setSelectedProfile(profileName);
   };
-
-  const isSelectedProfileTagged = selectedProfile ? (profileTags[selectedProfile] ?? false) : true;
 
   return (
     <>
-      <PanelSectionRow>
-        <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-          Select Profile:
-        </div>
-        <Dropdown
-          rgOptions={dropdownOptions}
-          selectedOption={selectedProfile}
-          onChange={handleOptionChange}
-          strDefaultLabel="Select a profile..."
-        />
-      </PanelSectionRow>
+      <DropdownProfile
+        profiles={profiles}
+        activeProfile={activeProfile}
+        onProfileSelect={handleProfileSelect}
+      />
 
       {selectedProfile && (
-        <>
-          <PanelSectionRow>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>
-              {selectedProfile}{" "}
-              {selectedProfile === activeProfile && (
-                <span style={{ color: '#4CAF50', fontSize: '12px' }}>(active)</span>
-              )}
-              {!isSelectedProfileTagged && (
-                <span style={{ color: '#FF9800', fontSize: '12px' }}>(untagged)</span>
-              )}
-            </div>
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <ButtonItem
-              layout="below"
-              bottomSeparator="none"
-              onClick={() => onActivate(selectedProfile)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Activate
-              </div>
-            </ButtonItem>
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <ButtonItem
-              layout="below"
-              bottomSeparator="none"
-              onClick={() => onCopySteamCommand(selectedProfile)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Copy Steam Cmd
-              </div>
-            </ButtonItem>
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <ButtonItem
-              layout="below"
-              onClick={() => onViewConfig(selectedProfile)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                View Config
-              </div>
-            </ButtonItem>
-          </PanelSectionRow>
-        </>
+        <ProfileItem
+          profileName={selectedProfile}
+          isActive={selectedProfile === activeProfile}
+          isTagged={profileTags[selectedProfile] ?? false}
+          onActivate={onActivate}
+          onCopySteamCommand={onCopySteamCommand}
+          onViewConfig={onViewConfig}
+        />
       )}
     </>
   );

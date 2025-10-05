@@ -8,11 +8,13 @@ import { useEffect, useState } from "react";
 interface DropdownProfileProps {
   profiles: string[];
   activeProfile: string | null;
+  onProfileSelect: (profileName: string) => void;
 }
 
 export function DropdownProfile({ 
   profiles, 
-  activeProfile, 
+  activeProfile,
+  onProfileSelect
 }: DropdownProfileProps) {
     const [selectedProfile, setSelectedProfile] = useState<string>(activeProfile || "");
 
@@ -31,6 +33,7 @@ export function DropdownProfile({
 
     const handleOptionChange = (option: DropdownOption) => {
         setSelectedProfile(option.data);
+        onProfileSelect(option.data);
     }
 
     return (
