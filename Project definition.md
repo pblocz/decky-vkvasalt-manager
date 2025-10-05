@@ -1,4 +1,4 @@
-This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky](https://github.com/SteamDeckHomebrew/decky-plugin-template).
+This is a Decky plugin with a **single sidebar UI** and no profile editing/renaming in the MVP, I’ll also align the backend section with the [Decky](/SteamDeckHomebrew/decky-plugin-template).
 
 Here’s the updated **Project Definition Document**:
 
@@ -152,20 +152,23 @@ Since Decky plugins run in a **sidebar**, the UI should be minimal and navigable
 * **Header:** `vkBasalt Profile Manager`
 
 * **Active Profile Indicator:**
-
+  * Button to view current global `vkBasalt.conf` contents in a modal
   * Shows name of currently active profile, or “None” if disabled.
-
-* **Profile List (scrollable):**
-
-  * Each profile has three options:
-
-    1. **[Activate Globally]** → sets it as global `vkBasalt.conf`
-    2. **[Copy Steam Command]** → copies launch option string to clipboard
-    3. **[View Config]** → opens modal showing profile configuration contents
 
 * **View Global Config Button:**
   * Button to view current global `vkBasalt.conf` contents in a modal
 
+* **Profile Dropdown:**
+
+  * Dropdown menu showing all available profiles
+  * Currently active profile is highlighted/selected in the dropdown
+  * User can select a different profile from the dropdown
+
+* **Action Buttons (for selected profile):**
+
+  1. **[Activate Globally]** → sets selected profile as global `vkBasalt.conf`
+  2. **[Copy Steam Command]** → copies launch option string to clipboard for selected profile
+  3. **[View Config]** → opens modal showing selected profile configuration contents
 
 ### Example Flow
 
@@ -177,33 +180,24 @@ Enable on Launch: ON [Toggle]
 
 [View Global Config]
 
-Profiles:
-  Default
-  [Activate]
-  [Copy Steam Cmd] 
-  [View Config]
-  ---
-  CAS Sharpening  (active)
-  [Activate]
-  [Copy Steam Cmd] 
-  [View Config]
-  ---
-  Vibrant Colors
-  [Activate]
-  [Copy Steam Cmd] 
-  [View Config]
-  ---
-  FXAA + SMAA
-  [Activate]
-  [Copy Steam Cmd] 
-  [View Config]
-  ---
+Select Profile: [CAS Sharpening ▼]
+  ↓ (dropdown options)
+  - Default
+  - CAS Sharpening
+  - Vibrant Colors  
+  - FXAA + SMAA
+
+[Activate Globally]
+[Copy Steam Command]
+[View Config]
 ```
 
+
 1. User opens Decky sidebar.
-2. User scrolls list
-3.1. Presses A on “Activate” → backend switches global profile
-3.2. Presses A on “Copy Steam Cmd” → command copied to clipboard (toast notification shows “Copied!”)
+2. User selects a profile from the dropdown
+3.1. Presses A on "Activate Globally" → backend switches global profile
+3.2. Presses A on "Copy Steam Command" → command copied to clipboard (toast notification shows "Copied!")
+3.3. Presses A on "View Config" → opens modal showing selected profile configurationve Profile Indicator:**
 
 ---
 
