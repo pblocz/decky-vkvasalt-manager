@@ -246,6 +246,9 @@ function Content() {
     label: profile === activeProfile ? `${profile} (active)` : profile
   }));
 
+  // Find the selected option object for the dropdown
+  const selectedOption = dropdownOptions.find(option => option.data === selectedProfile);
+
   if (loading) {
     return (
       <PanelSection title="vkBasalt Profile Manager">
@@ -310,7 +313,7 @@ function Content() {
         </div>
         <Dropdown
           rgOptions={dropdownOptions}
-          selectedOption={selectedProfile}
+          selectedOption={selectedOption}
           onChange={(option) => setSelectedProfile(option.data)}
           strDefaultLabel="Select a profile..."
         />
