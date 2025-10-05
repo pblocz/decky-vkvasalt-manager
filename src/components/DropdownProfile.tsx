@@ -53,7 +53,7 @@ export function DropdownProfile({
         </div>
         <Dropdown
           rgOptions={dropdownOptions}
-          selectedOption={selectedOption}
+          selectedOption={selectedProfile}
           onChange={handleOptionChange}
           strDefaultLabel="Select a profile..."
         />
