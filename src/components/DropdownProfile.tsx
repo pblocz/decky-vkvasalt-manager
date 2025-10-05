@@ -14,7 +14,14 @@ export function DropdownProfile({
   profiles, 
   activeProfile, 
 }: DropdownProfileProps) {
-    const [selectedProfile, setSelectedProfile] = useState<string>("");
+    const [selectedProfile, setSelectedProfile] = useState<string>(activeProfile || "");
+
+    // Update selectedProfile when activeProfile changes
+    useEffect(() => {
+        if (activeProfile) {
+            setSelectedProfile(activeProfile);
+        }
+    }, [activeProfile]);
 
     // Create dropdown options
     const dropdownOptions = profiles.map(profile => ({
