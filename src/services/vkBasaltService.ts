@@ -10,7 +10,6 @@ export class VkBasaltService {
   static readonly getActiveProfile = callable<[], string | null>("get_active_profile");
   static readonly activateProfileGlobally = callable<[profile_name: string], boolean>("activate_profile_globally");
   static readonly getSteamCommand = callable<[profile_name: string], string>("get_steam_command");
-  static readonly resetProfile = callable<[], boolean>("reset_profile");
 
   // Profile tagging
   static readonly checkProfileTags = callable<[], Record<string, boolean>>("check_profile_tags");
