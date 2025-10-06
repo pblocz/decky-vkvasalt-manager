@@ -35,10 +35,12 @@ jobs:
         cp -r dist "./vkvasalt-manager"
         mkdir upload
         mv "./vkvasalt-manager" ./upload
-    
+
+    - run: echo "BRANCH_NAME=${GITHUB_REF_NAME////_}" >> $GITHUB_ENV
+
     - name: Upload package artifact
       uses: actions/upload-artifact@v4
       with:
-        name: vkvasalt-manager-decky-${{ github.ref_name }}
+        name: vkvasalt-manager-decky-${{ env.BRANCH_NAME }}
         path: ./upload
   
