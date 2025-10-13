@@ -4,6 +4,7 @@ import configparser as cfg
 def parse_config(path):
     section = "CONFIG"
     config = cfg.ConfigParser()  # allow_unnamed_section=True)  # Only works in python 3.13+, but decky uses 3.11
+    config.optionxform = str  # make keys case-sensitive
 
     with open(path, 'r', encoding='utf-8') as f:
         config_string = f"[{section}]\n" + f.read()
