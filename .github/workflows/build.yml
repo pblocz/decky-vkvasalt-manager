@@ -33,6 +33,7 @@ jobs:
         cp LICENSE "./vkvasalt-manager"
         cp README.md "./vkvasalt-manager"
         cp -r dist "./vkvasalt-manager"
+        cp -r py_modules "./vkvasalt-manager"
         mkdir upload
         mv "./vkvasalt-manager" ./upload
 
