@@ -2,10 +2,14 @@ import configparser as cfg
 
 
 def parse_config(path):
-    config = cfg.ConfigParser(allow_unnamed_section=True)
-    config.optionxform=str
-    config.read(path)
-    section = config[cfg.UNNAMED_SECTION]
+    section = "CONFIG"
+    config = cfg.ConfigParser()  # allow_unnamed_section=True)  # Only works in python 3.13+, but decky uses 3.11
+
+    with open(path, 'r', encoding='utf-8') as f:
+        config_string = f"[{section}]\n" + f.read()
+
+    config.read_string(config_string)
+    section = config[section]
 
     data = {}
     for key in section:
