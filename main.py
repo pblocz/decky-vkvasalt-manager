@@ -16,6 +16,10 @@ class Plugin:
         self.vkbasalt_config_dir = Path.home() / ".config" / "vkBasalt"
         self.profiles_dir = self.vkbasalt_config_dir / "profiles"
         self.global_config = self.vkbasalt_config_dir / "vkBasalt.conf"
+
+        import sys
+        decky.logger.info(sys.version)
+        decky.logger.info(sys.version_info)
         
     def _extract_profile_name_from_tag(self, content: str) -> Optional[str]:
         """Extract profile name from content tag"""
