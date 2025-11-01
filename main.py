@@ -10,6 +10,22 @@ import re
 import decky
 import asyncio
 
+FORCE_ZINK_SCRIPT = """
+#!/bin/bash
+# force-zink
+
+# export VK_LAYER_PATH=/usr/share/vulkan/implicit_layer.d 
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+export MESA_LOADER_DRIVER_OVERRIDE=zink
+export GALLIUM_DRIVER=zink
+
+# [ "$ENABLE_VKBASALT" = "1" ] && VK_INSTANCE_LAYERS+=":VK_LAYER_VKBASALT_post_processing"
+# [ "$MANGOHUD" = "1" ] && VK_INSTANCE_LAYERS+=":VK_LAYER_MANGOHUD_overlay"
+
+export VK_INSTANCE_LAYERS
+exec "$@"
+"""
+
 class Plugin:
     def __init__(self):
         self.vkbasalt_config_dir = Path.home() / ".config" / "vkBasalt"
@@ -327,6 +343,5 @@ class Plugin:
         
         if not self.force_zink_script.exists():
             # Create the force_zink script to set VK_ICD_FILENAMES for Zink
-            script_content = """#!/bin/bash"""
-            self.force_zink_script.write_text(script_content)
+            self.force_zink_script.write_text(FORCE_ZINK_SCRIPT)
             os.chmod(self.force_zink_script, 0o755)
