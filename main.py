@@ -15,6 +15,7 @@ class Plugin:
         self.vkbasalt_config_dir = Path.home() / ".config" / "vkBasalt"
         self.profiles_dir = self.vkbasalt_config_dir / "profiles"
         self.global_config = self.vkbasalt_config_dir / "vkBasalt.conf"
+        self.force_zink_script = self.vkbasalt_config_dir / "force_zink"
         
     def _extract_profile_name_from_tag(self, content: str) -> Optional[str]:
         """Extract profile name from content tag"""
@@ -293,6 +294,11 @@ class Plugin:
         except Exception as e:
             decky.logger.error(f"Error reading profile config {profile_name}: {e}")
             return ""
+    
+    async def get_force_zink_script_command(self) -> str:
+        """Get the contents of the force_zink script"""
+        relative_path = self.force_zink_script.relative_to(Path.home())
+        return f"~/{relative_path} %command%"
 
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
@@ -314,3 +320,13 @@ class Plugin:
     # Migrations that should be performed before entering `_main()`.
     async def _migration(self):
         decky.logger.info("vkBasalt Profile Manager migration")
+
+        if not self.vkbasalt_config_dir.exists():
+            # Ensure the config directory exists
+            self.vkbasalt_config_dir.mkdir(parents=True, exist_ok=True)
+        
+        if not self.force_zink_script.exists():
+            # Create the force_zink script to set VK_ICD_FILENAMES for Zink
+            script_content = """#!/bin/bash"""
+            self.force_zink_script.write_text(script_content)
+            os.chmod(self.force_zink_script, 0o755)

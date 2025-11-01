@@ -37,6 +37,34 @@ export function useProfileActions() {
     }
   }, []);
 
+  const copyForceZinkCommand = useCallback(async () => {
+    try {
+      const command = await VkBasaltService.getForceZinkScriptCommand();
+      const result = await copyWithVerification(command);
+      
+      if (result.success) {
+        toaster.toast({
+          title: "Copied!",
+          body: `Force Zink script command copied to clipboard${result.verified ? ' (verified)' : ''}`
+        });
+        return true;
+      } else {
+        toaster.toast({
+          title: "Error",
+          body: "Failed to copy Force Zink script command"
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('Failed to copy Force Zink command:', error);
+      toaster.toast({
+        title: "Error",
+        body: "Failed to copy Force Zink script command"
+      });
+      return false;
+    }
+  }, []);
+
   const viewProfileConfig = useCallback(async (profileName: string) => {
     try {
       const config = await VkBasaltService.getProfileConfig(profileName);
@@ -76,6 +104,7 @@ export function useProfileActions() {
 
   return {
     copySteamCommand,
+    copyForceZinkCommand,
     viewProfileConfig,
     viewGlobalConfig,
   };

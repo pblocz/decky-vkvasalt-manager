@@ -8,6 +8,7 @@ import { MaintenanceSection } from "./MaintenanceSection";
 import { GlobalProfile } from "./GlobalProfile";
 import { useProfiles } from "../hooks/useProfiles";
 import { useProfileActions } from "../hooks/useProfileActions";
+import { ExtraActionsMenu } from "./ExtraActionsMenu";
 
 
 
@@ -32,6 +33,7 @@ export function Content() {
 
     const {
         copySteamCommand,
+        copyForceZinkCommand,
         viewProfileConfig,
         viewGlobalConfig
     } = profileActions;
@@ -91,6 +93,10 @@ export function Content() {
                 onActivate={activateProfile}
                 onCopySteamCommand={copySteamCommand}
                 onViewConfig={viewProfileConfig}
+            />
+
+            <ExtraActionsMenu
+                onCopyForceZinkCommand={copyForceZinkCommand}
             />
         </PanelSection>
     );
