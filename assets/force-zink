@@ -1,0 +1,14 @@
+#!/bin/bash
+# force-zink
+# Based on https://github.com/DadSchoorse/vkBasalt/issues/168#issuecomment-1675866422
+
+# export VK_LAYER_PATH=/usr/share/vulkan/implicit_layer.d 
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+export MESA_LOADER_DRIVER_OVERRIDE=zink
+export GALLIUM_DRIVER=zink
+
+# [ "$ENABLE_VKBASALT" = "1" ] && VK_INSTANCE_LAYERS+=":VK_LAYER_VKBASALT_post_processing"
+# [ "$MANGOHUD" = "1" ] && VK_INSTANCE_LAYERS+=":VK_LAYER_MANGOHUD_overlay"
+
+# export VK_INSTANCE_LAYERS
+exec "$@"
