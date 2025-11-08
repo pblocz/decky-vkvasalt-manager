@@ -33,12 +33,15 @@ jobs:
         cp LICENSE "./vkvasalt-manager"
         cp README.md "./vkvasalt-manager"
         cp -r dist "./vkvasalt-manager"
+        cp -r assets "./vkvasalt-manager"
         mkdir upload
         mv "./vkvasalt-manager" ./upload
+
+    - name: Sanitize ref name
+      run: echo "SANITIZED_REF=$(echo '${{ github.ref_name }}' | sed 's/\//-/g')" >> $GITHUB_ENV
     
     - name: Upload package artifact
       uses: actions/upload-artifact@v4
       with:
-        name: vkvasalt-manager-decky-${{ github.ref_name }}
+        name: vkvasalt-manager-decky-${{ env.SANITIZED_REF }}
         path: ./upload
-  
